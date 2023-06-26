@@ -67,6 +67,7 @@
     "node": "^14.0.0 || ^16.0.0 || ^18.0.0"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.9.2",
     "eth-permit": "^0.2.1",
     "web3": "^1.7.4"
   },
