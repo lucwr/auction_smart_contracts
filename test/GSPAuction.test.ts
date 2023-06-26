@@ -29,7 +29,7 @@ const setup = deployments.createFixture(async (hre) => {
   };
 });
 
-describe.only("GSPAuction test", () => {
+describe("GSPAuction test", () => {
   const startBlock = 100;
   const biddingEndBlock = startBlock + 10;
   const revealEndBlock = startBlock + 20;
