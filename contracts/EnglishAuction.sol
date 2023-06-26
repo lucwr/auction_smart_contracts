@@ -132,7 +132,7 @@ contract EnglishAuction is ReentrancyGuard, Ownable {
   }
 
   /**
-   * @notice start auction
+   * @notice finish auction
    * @dev This function finishs auction.
    *      Sends asset to winner and sends bid token to owner.
    */
