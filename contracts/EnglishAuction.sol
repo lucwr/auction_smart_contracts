@@ -100,23 +100,33 @@ contract EnglishAuction is ReentrancyGuard, Ownable {
    *      and locks new bidder's token
    * @param _price new bidding price
    */
-  function propose(uint256 _price) external {
+  function propose(uint256 _price) external payable nonReentrant {
     require(lastBlock > 0, "Auction: auction not started yet");
-    require(block.number <= lastBlock + maxBidInterval, "Auction: No bids anymore");
+    require(block.number <= lastBlock + maxBidInterval, "Auction: no bids anymore");
     require(_price > lastPrice, "Auction: bid price is low than last one");
 
-    if (lastBidder != address(0)) {
-      // release last bidder's token
-      IERC20(bidToken).safeTransfer(lastBidder, lastPrice);
-    }
+    address previousBidder = lastBidder;
+    uint256 previousPrice = lastPrice;
 
     // changes last bid params
     lastPrice = _price;
     lastBidder = msg.sender;
     lastBlock = block.number;
 
+    if (previousBidder != address(0)) {
+      // release last bidder's token
+      if (bidToken == address(0)) {
+        payable(previousBidder).transfer(previousPrice);
+      }
+      IERC20(bidToken).safeTransfer(previousBidder, previousPrice);
+    }
+
     // lock new bidder's token
-    IERC20(bidToken).safeTransferFrom(msg.sender, address(this), _price);
+    if (bidToken == address(0)) {
+      require(_price == msg.value, "Auction: invalid eth amount");
+    } else {
+      IERC20(bidToken).safeTransferFrom(msg.sender, address(this), _price);
+    }
 
     emit NewBid(msg.sender, _price);
   }
@@ -149,7 +159,11 @@ contract EnglishAuction is ReentrancyGuard, Ownable {
     }
 
     // sends bid token to owner
-    IERC20(bidToken).safeTransfer(owner(), lastPrice);
+    if (bidToken == address(0)) {
+      payable(owner()).transfer(lastPrice);
+    } else {
+      IERC20(bidToken).safeTransfer(owner(), lastPrice);
+    }
 
     emit Finished(assetReceiver, lastPrice);
   }
